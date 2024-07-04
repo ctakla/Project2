@@ -48,7 +48,8 @@ header {
     text-align: center;
 }
 #keyboard {
-    margin-top: 20px;   
+    margin-top: 20px;
+    width: 100%;
 }
 .keyboard-row {
     display: flex;
