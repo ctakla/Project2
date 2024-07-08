@@ -49,7 +49,7 @@ header {
 }
 #keyboard {
     margin-top: 20px;
-    width: 100%;
+    width: 100%;   
 }
 .keyboard-row {
     display: flex;
@@ -68,6 +68,12 @@ header {
 }
 .key.correct {
     background-color: green;
+}
+.key.absent {
+    background-color: grey;
+}
+.key.present {
+    background-color: #917c07;
 }
 #input {
     font-size: 1.5rem;
