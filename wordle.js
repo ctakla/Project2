@@ -19,16 +19,35 @@ function gameSetup() {
     const submitBtn = document.getElementById("submit-btn");
     const guessInput = document.getElementById("guess");
 
-    submitBtn.addEventListener("click", () => {
+    submitBtn.addEventListener("click", async () => {
         const guess = guessInput.value.toLowerCase();
         if (guess.length !== 5) {
           alert("Please enter a 5-letter word");
           return;
         } 
+
+        const isValidWord = await validateWord(guess);
+        if (!isValidWord) {
+            alert("The word is not in the dictionary. Please enter a valid 5-letter word.");
+            return;
+        }
         attempts++;
         handleGuess(guess);
         guessInput.value = "";
       });      
+}
+
+async function validateWord(word) {
+    try {
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        if (!response.ok) {
+            throw new Error('Word not found');
+        }
+        const data = await response.json();
+        return data && data.length > 0;
+    } catch (error) {
+        return false;
+    }
 }
 
 function createSquares() {
@@ -70,31 +89,33 @@ function handleGuess(guess) {
     const guessArray = guess.split('');
     const wordArray = word.split('');
 
+    let letterCount = {};
+    wordArray.forEach(letter => {
+        letterCount[letter] = (letterCount[letter] || 0) + 1;
+    });
+
     guessArray.forEach((letter, index) => {
         const square = document.getElementById(`square-${currentRow + index + 1}`);
-        if (square) {
-            if (letter === wordArray[index]) {
-                square.style.backgroundColor = 'green';
-            } else if (wordArray.includes(letter)) {
+        const key = document.getElementById(`key-${letter}`);
+        if (letter === wordArray[index]) {
+            square.style.backgroundColor = 'green';
+            key.classList.add('correct');
+            letterCount[letter]--;
+        }
+        square.textContent = letter.toUpperCase();
+    });
+
+    guessArray.forEach((letter, index) => {
+        const square = document.getElementById(`square-${currentRow + index + 1}`);
+        const key = document.getElementById(`key-${letter}`);
+        if (square.style.backgroundColor !== 'green') {
+            if (wordArray.includes(letter) && letterCount[letter] > 0) {
                 square.style.backgroundColor = '#917c07';
+                key.classList.add('present');
+                letterCount[letter]--;
             } else {
                 square.style.backgroundColor = 'grey';
-            }
-            square.textContent = letter.toUpperCase();
-        }
-        const key = document.getElementById(`key-${letter}`);
-        if (key) {
-            key.textContent = letter.toUpperCase();
-            key.classList.remove('correct', 'present', 'absent');
-            if (letter === wordArray[index]) {
-                key.classList.add('correct');
-                key.style.backgroundColor = 'green';
-            } else if (wordArray.includes(letter)) {
-                key.classList.add('present');
-                key.style.backgroundColor = '#917c07';
-            } else {
                 key.classList.add('absent');
-                key.style.backgroundColor = 'grey';
             }
         }
     });
